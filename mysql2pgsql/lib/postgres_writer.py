@@ -214,13 +214,13 @@ class PostgresWriter(object):
                 serial_key = column['name']
                 maxval = 1 if column['maxval'] < 1 else column['maxval'] + 1
 
-        truncate_sql = 'TRUNCATE "%s" CASCADE;' % table.name
+        truncate_sql = 'TRUNCATE %s CASCADE;' % table.name
         serial_key_sql = None
 
         if serial_key:
             serial_key_sql = "SELECT pg_catalog.setval(pg_get_serial_sequence(%(table_name)s, %(serial_key)s), %(maxval)s, true);" % {
-                'table_name': QuotedString('"%s"' % table.name).getquoted(),
-                'serial_key': QuotedString(serial_key).getquoted(),
+                'table_name': QuotedString('%s' % table.name).getquoted(),
+                'serial_key': QuotedString(serial_key).getquoted().lower(),
                 'maxval': maxval}
 
         return (truncate_sql, serial_key_sql)

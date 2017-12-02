@@ -8,7 +8,6 @@ import psycopg2
 from . import print_row_progress, status_logger
 from .postgres_writer import PostgresWriter
 
-
 class PostgresDbWriter(PostgresWriter):
     """Class used to stream DDL and/or data
     from a MySQL server to a PostgreSQL.
@@ -112,8 +111,8 @@ class PostgresDbWriter(PostgresWriter):
     def copy_from(self, file_obj, table_name, columns):
         with closing(self.conn.cursor()) as cur:
             cur.copy_from(file_obj,
-                          table=table_name,
-                          columns=columns
+                          table=table_name.replace('"', ''),
+                          columns=[c.replace('"', '') for c in columns]
                           )
 
         self.conn.commit()
