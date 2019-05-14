@@ -1,3 +1,12 @@
+===================================================================================================================
+NOTE: The code in this fork was adapted to allow migration a Bareos catalog DB, it is only useful for that purpose!
+===================================================================================================================
+
+Instructions for using this for migration a Bareos catalog DB from MySQL/MariaDB to PostgreSQL are still missing
+here. It is not yet very well tested.
+
+The changes are probably not useful for general use of this tool.
+
 ========================================================================================
 py-mysql2pgsql - A tool for migrating/converting/exporting data from MySQL to PostgreSQL
 ========================================================================================
