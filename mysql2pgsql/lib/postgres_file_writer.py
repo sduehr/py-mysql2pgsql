@@ -132,21 +132,28 @@ SET client_min_messages = warning;
 -- Data for Name: %(table_name)s; Type: TABLE DATA;
 --
 
-COPY "%(table_name)s" (%(column_names)s) FROM stdin;
+COPY %(table_name)s (%(column_names)s) FROM stdin;
 """ % {
                 'table_name': table.name,
-                'column_names': ', '.join(('"%s"' % col['name']) for col in table.columns)})
+                'column_names': ', '.join(('%s' % col['name']) for col in table.columns)})
         if verbose:
             tt = time.time
             start_time = tt()
             prev_val_len = 0
             prev_row_count = 0
         for i, row in enumerate(reader.read(table), 1):
+            #print('DEBUG: row(before): %s' % repr(row))
+            #for ctmp in row:
+            #    print('DEBUG: type(%s): %s' % (ctmp, type(ctmp)))
             row = list(row)
+            #print('DEBUG: row(after row = list(row)): %s' % repr(row))
             pr(table, row)
+            #print('DEBUG: row(after pr(table, row)): %s' % repr(row))
             try:
+                #print('DEBUG: row=%s' % row)
                 f_write(u'%s\n' % (u'\t'.join(row)))
             except UnicodeDecodeError:
+                #print('DEBUG (UnicodeDecodeError) row=%s' % row)
                 f_write(u'%s\n' % (u'\t'.join(r.decode('utf-8') for r in row)))
             if verbose:
                 if (i % 20000) == 0:

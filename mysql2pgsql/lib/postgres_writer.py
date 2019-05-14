@@ -7,6 +7,9 @@ from datetime import date, datetime, timedelta
 from psycopg2.extensions import AsIs, Binary, QuotedString
 from pytz import timezone
 
+import pprint
+pp=pprint.PrettyPrinter(indent=4)
+
 
 class PostgresWriter(object):
     """Base class for :py:class:`mysql2pgsql.lib.postgres_file_writer.PostgresFileWriter`
@@ -154,6 +157,9 @@ class PostgresWriter(object):
         for index, column in enumerate(table.columns):
             hash_key = hash(frozenset(column.items()))
             column_type = self.column_types[hash_key] if hash_key in self.column_types else self.column_type(column)
+            #print('DEBUG: process_row() column_type: %s' % column_type)
+            #print('DEBUG: process_row() column:')
+            #pp.pprint(column)
             if row[index] == None and ('timestamp' not in column_type or not column['default']):
                 row[index] = '\N'
             elif row[index] == None and column['default']:
@@ -165,10 +171,20 @@ class PostgresWriter(object):
                 row[index] = bin(ord(row[index]))[2:]
             elif isinstance(row[index], (str, unicode, basestring)):
                 if column_type == 'bytea':
-                    row[index] = Binary(row[index]).getquoted()[1:-8] if row[index] else row[index]
+                    #print('DEBUG: process_row() column_type is bytea')
+                    #print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+                    if column['name'] == 'RestoreObject':
+                        #print('DEBUG: process_row() colum name is RestoreObject')
+                        row[index] = '\\\\x' + row[index].encode('hex')
+                    else:
+                        row[index] = row[index].replace('\\', r'\\').replace('\n', r'\n').replace(
+                            '\t', r'\t').replace('\r', r'\r').replace('\0', '')
+                    #print('DEBUG: row[%s] after: <%s>' % (index, str(row[index])))
                 elif 'text[' in column_type:
                     row[index] = '{%s}' % ','.join('"%s"' % v.replace('"', r'\"') for v in row[index].split(','))
                 else:
+                    #print('DEBUG: process_row() column_type is: %s' % column_type)
+                    #print('DEBUG: process_row() column name is: %s' % column['name'])
                     row[index] = row[index].replace('\\', r'\\').replace('\n', r'\n').replace(
                         '\t', r'\t').replace('\r', r'\r').replace('\0', '')
             elif column_type == 'boolean':

@@ -6,6 +6,8 @@ from contextlib import closing
 import MySQLdb
 import MySQLdb.cursors
 
+import pprint
+pp=pprint.PrettyPrinter(indent=4)
 
 re_column_length = re.compile(r'\((\d+)\)')
 re_column_precision = re.compile(r'\((\d+),(\d+)\)')
@@ -30,6 +32,12 @@ class DB:
             'use_unicode': True,
             'charset': 'utf8',
             }
+        #args = {
+        #    'user': str(options.get('username', 'root')),
+        #    'db': options['database'],
+        #    'use_unicode': True,
+        #    'charset': 'latin1',
+        #    }
 
         if options.get('password', None):
             args['passwd'] = str(options.get('password', None))
@@ -121,11 +129,15 @@ class MysqlReader(object):
 
         def _load_columns(self):
             fields = []
+            #print('DEBUG: _load_columns(): self.name=%s' % self.name)
             for row in self.reader.db.query('SHOW FULL COLUMNS FROM `%s`' % self.name):
                 res = ()
                 for field in row:
                   if type(field) == unicode:
+                    #if self.name in ['Path', 'Filename']:
+                    #    print('DEBUG: Field %s is unicode' % field)
                     res += field.encode('utf8'),
+                    #res += field
                   else:
                     res += field,
                 length_match = re_column_length.search(res[1])
@@ -155,6 +167,8 @@ class MysqlReader(object):
                 res = self.reader.db.query('SELECT MAX(`%s`) FROM `%s`;' % (field['name'], self.name), one=True)
                 field['maxval'] = int(res[0]) if res[0] else 0
 
+            # DEBUG
+            #pp.pprint(fields)
             return fields
 
         def _load_table_comment(self):
