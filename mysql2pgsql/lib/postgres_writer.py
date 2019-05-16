@@ -7,6 +7,8 @@ from datetime import date, datetime, timedelta
 from psycopg2.extensions import AsIs, Binary, QuotedString
 from pytz import timezone
 
+import chardet
+
 import pprint
 pp=pprint.PrettyPrinter(indent=4)
 
@@ -171,15 +173,21 @@ class PostgresWriter(object):
                 row[index] = bin(ord(row[index]))[2:]
             elif isinstance(row[index], (str, unicode, basestring)):
                 if column_type == 'bytea':
-                    #print('DEBUG: process_row() column_type is bytea')
-                    #print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+                    if column['name'] == 'LogText':
+                        #print('DEBUG: process_row() column_type is bytea')
+                        #print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+                        detected = chardet.detect(row[index])
+                        #print('DEBUG: chardet.detect(): %s' % detected)
+                        if detected['encoding'] not in ['ascii', 'utf-8']:
+                            row[index] = row[index].decode(detected['encoding']).encode('utf-8')
                     if column['name'] == 'RestoreObject':
-                        #print('DEBUG: process_row() colum name is RestoreObject')
+                        #print('DEBUG: process_row() colum name is %s' % column['name'])
                         row[index] = '\\\\x' + row[index].encode('hex')
                     else:
                         row[index] = row[index].replace('\\', r'\\').replace('\n', r'\n').replace(
                             '\t', r'\t').replace('\r', r'\r').replace('\0', '')
-                    #print('DEBUG: row[%s] after: <%s>' % (index, str(row[index])))
+                    #if column['name'] == 'LogText':
+                    #    print('DEBUG: row[%s] after:  <%s>' % (index, str(row[index])))
                 elif 'text[' in column_type:
                     row[index] = '{%s}' % ','.join('"%s"' % v.replace('"', r'\"') for v in row[index].split(','))
                 else:
