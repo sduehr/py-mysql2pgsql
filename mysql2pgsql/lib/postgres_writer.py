@@ -173,6 +173,32 @@ class PostgresWriter(object):
                 row[index] = bin(ord(row[index]))[2:]
             elif isinstance(row[index], (str, unicode, basestring)):
                 if column_type == 'bytea':
+                    if table.name == 'Log' and column['name'] == 'LogText':
+                        #print('DEBUG: table: %s colum: %s' % (table.name, column['name']))
+                        #print('DEBUG: process_row() column_type is bytea')
+                        #print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+                        detected = chardet.detect(row[index])
+                        #print('DEBUG: chardet.detect(): %s' % detected)
+                        if detected['encoding'] not in ['ascii', 'utf-8']:
+                            row[index] = row[index].decode(detected['encoding']).encode('utf-8')
+#                    if table.name in ['File', 'Path'] and column['name'] == 'Name' and row[index] != '':
+#                        #print('DEBUG: table: %s colum: %s' % (table.name, column['name']))
+#                        #print('DEBUG: process_row() column_type is bytea')
+#                        #print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+#                        detected = chardet.detect(row[index])
+#                        #print('DEBUG: chardet.detect(): %s' % detected)
+#                        if detected['encoding'] not in ['ascii', 'utf-8', 'ISO-8859-2', 'TIS-620']:
+#                            print('DEBUG: chardet.detect(): %s' % detected)
+#                            print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+#                            row[index] = row[index].decode(detected['encoding']).encode('utf-8')
+#                            print('DEBUG: row[%s] after: <%s>' % (index, str(row[index])))
+                    if table.name in ['File', 'Path'] and column['name'] == 'Name' and row[index] != '':
+                        detected = chardet.detect(row[index])
+                        if detected['encoding'] not in ['ascii', 'utf-8', 'ISO-8859-2', 'TIS-620']:
+                            print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
+                            row[index] = str(bytearray(row[index]))
+                        if detected['encoding'] not in ['ascii', 'utf-8', 'ISO-8859-2', 'TIS-620']:
+                            print('DEBUG: row[%s] after: <%s>' % (index, str(row[index])))
                     if column['name'] == 'LogText':
                         #print('DEBUG: process_row() column_type is bytea')
                         #print('DEBUG: row[%s] before: <%s>' % (index, str(row[index])))
