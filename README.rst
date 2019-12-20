@@ -7,6 +7,10 @@ here. It is not yet very well tested.
 
 The changes are probably not useful for general use of this tool.
 
+=====================================================================
+NOTE: DON'T use this, it does not work. I'll probably delete it soon.
+=====================================================================
+
 ========================================================================================
 py-mysql2pgsql - A tool for migrating/converting/exporting data from MySQL to PostgreSQL
 ========================================================================================
